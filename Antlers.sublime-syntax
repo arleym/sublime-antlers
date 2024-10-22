@@ -1,0 +1,72 @@
+%YAML 1.2
+---
+name: Antlers
+file_extensions:
+  - antlers
+  - html
+
+scope: text.html.antlers
+
+contexts:
+  main:
+    # Match Antlers tags
+    - match: \{\{[\s\S]*?\}\}
+      scope: meta.tag.antlers
+      push: antlers-tag
+
+    # Include HTML syntax highlighting for the rest of the content
+    - include: text.html.basic
+
+  antlers-tag:
+    # Match comments inside Antlers tags: {{# comment #}}
+    - match: \{\{#
+      scope: punctuation.definition.comment.antlers
+      push: comment
+
+    # Match closing Antlers tag
+    - match: \}\}
+      pop: true
+
+  comment:
+    - meta_scope: comment.block.antlers
+    - match: '#\}\}'
+      scope: punctuation.definition.comment.end.antlers
+      pop: true
+
+  if-block:
+    # Match closing if tag {{ /if }}
+    - match: \{\{\s*/if\b
+      scope: keyword.control.conditional.end.antlers
+      pop: true
+
+    # Match Antlers tags within the if block
+    - match: \{\{[\s\S]*?\}\}
+      scope: meta.tag.antlers
+
+  foreach-block:
+    # Match closing foreach tag {{ /foreach }}
+    - match: \{\{\s*/foreach\b
+      scope: keyword.control.loop.end.antlers
+      pop: true
+
+    # Match variables inside foreach loop
+    - match: \{\{\s*[a-zA-Z_][a-zA-Z0-9_]*\s*\}\}
+      scope: variable.other.loop.antlers
+
+    # Match Antlers tags within the loop block
+    - match: \{\{[\s\S]*?\}\}
+      scope: meta.tag.antlers
+
+  statamic-tag:
+    # Match closing custom tag {{ /nav }} etc.
+    - match: \{\{\s*/(nav|collection|paginate|assets|bard|taxonomy|form|user|file|glide)\b
+      scope: support.function.tag.statamic.antlers
+      pop: true
+
+    # Match variables inside custom tag
+    - match: '[a-zA-Z_][a-zA-Z0-9_]*'
+      scope: variable.other.statamic
+
+    # Match Antlers tag close
+    - match: \}\}
+      pop: true
